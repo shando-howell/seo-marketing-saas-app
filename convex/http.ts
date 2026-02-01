@@ -97,12 +97,4 @@ http.route({
     }),
 });
 
-http.route({
-    path: "/test",
-    method: "GET",
-    handler: httpAction(async (ctx, req) => {
-        return new Response("Test route", { status: 200 });
-    }),
-});
-
 export default http;

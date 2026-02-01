@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
         <body>
-          <ClerkProvider>
+          <ClerkProvider dynamic>
             <ConvexClientProvider>
               <ThemeProvider
                 attribute="class"

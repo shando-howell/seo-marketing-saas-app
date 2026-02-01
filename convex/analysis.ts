@@ -18,7 +18,7 @@ export const runAnalysis = internalAction({
     },
     returns: v.null(),
     handler: async (ctx, args) => {
-        console.log("STarting AI analysis for job:", args.jobId);
+        console.log("Starting AI analysis for job:", args.jobId);
 
         try {
             // Get the job and its raw data

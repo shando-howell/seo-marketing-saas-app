@@ -10,6 +10,17 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { 
+    getSpinnerColor,
+    getProgressPercentage,
+    getProgressBarStyle,
+    getReportTitle,
+    getStatusMessage,
+    formatDateTime
+} from "@/lib/status-utils";
+import StatusBadge from "@/components/StatusBadge";
+import startScraping from "@/actions/startScraping";
+
 const ReportPage = () => {
     const { id } = useParams<{ id: string }>();
     const { user } = useUser();
@@ -21,7 +32,35 @@ const ReportPage = () => {
     const [retryError, setRetryError] = useState<string | null>(null);
     const router = useRouter();
 
-    const handleRetry = () => {};
+    const handleRetry = () => {
+        if (!job) return;
+
+        setRetryError(null);
+
+        startTransition(async () => {
+            try {
+                const result = await startScraping(job.originalPrompt, job._id);
+                if (result.ok) {
+                    if (result.smartRetry) {
+                        // Smart retry - stay on same page, job will update in real-time
+                        console.log("Smart retyr initiated - staying on current page");
+                        // Don't navigate anywhere, just let the page update via real-time data
+                        return; // Explicitly return to complete the transition
+                    } else if (result.data?.snapshot_id) {
+                        // Full retry with new snapshot - redirect to new report page
+                        router.replace(`/dashboard/report/${result.data.snapshot_id}`);
+                        return; // Explicitly return to complete the transition
+                    }
+                } else {
+                    setRetryError(result.error || "Failed to retry job");
+                }
+            } catch (error) {
+                setRetryError(
+                    error instanceof Error ? error.message : "Unknown error occured"
+                );
+            }
+        })
+    };
 
     if (!id) {
         return (
@@ -137,7 +176,7 @@ const ReportPage = () => {
                                         </div>
                                     )}
 
-                                    {job.snapShotId && (
+                                    {job.snapshotId && (
                                         <div className="flex items-center gap-3">
                                             <BarChart3 className='w-4 h-4 text-muted-foreground' />
                                             <div>
@@ -203,40 +242,43 @@ const ReportPage = () => {
                                 </Link>
                             )}
 
-                        {job.status === "failed" && (
-                            <div className="flex flex-col items-center gap-2">
-                                <Button
-                                    variant="default"
-                                    size="lg"
-                                    className="cursor-pointer"
-                                    onClick={handleRetry}
-                                    disabled={isPending}
-                                >
-                                    {isPending ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                            Retrying...
-                                        </>
-                                    ) : (
-                                        "Retry Report"
+                            {job.status === "failed" && (
+                                <div className="flex flex-col items-center gap-2">
+                                    <Button
+                                        variant="default"
+                                        size="lg"
+                                        className="cursor-pointer"
+                                        onClick={handleRetry}
+                                        disabled={isPending}
+                                    >
+                                        {isPending ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                                Retrying...
+                                            </>
+                                        ) : (
+                                            "Retry Report"
+                                        )}
+                                    </Button>
+                                    {retryError && (
+                                        <p className="text-sm text-red-600 dark:text-red-400 text-center">
+                                            {retryError}
+                                        </p>
                                     )}
-                                </Button>
-                                {retryError && (
-                                    <p className="text-sm text-red-600 dark:text-red-400 text-center">
-                                        {retryError}
-                                    </p>
-                                )}
-                            </div>
-                        )}
+                                </div>
+                            )}
+                        </div>
 
                         <Link href="/dashboard">
                             <Button variant="outline" size="lg" className="cursor-pointer">
                                 Back to Dashboard
                             </Button>
                         </Link>
+                    </div>
+                </div>
             </div>
         </div>
     )
 }
 
-export default ReportPage
+export default ReportPage;

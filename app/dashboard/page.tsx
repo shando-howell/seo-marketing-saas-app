@@ -14,6 +14,8 @@ import { useState } from "react";
 import { Plus, BarChart3, FileText, Sparkles, Loader2 } from "lucide-react";
 import CountrySelector from "@/components/CountrySelector";
 import startScraping from "@/actions/startScraping";
+import { AuthLoading, Authenticated } from "convex/react";
+import ReportsTable from "@/components/ReportsTable";
 
 const DashboardPage = () => {
     const [prompt, setPrompt] = useState("");
@@ -77,81 +79,104 @@ const DashboardPage = () => {
                             powered by AI
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="relative">
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="flex flex-col md:flex-row gap-4">
-                                <div className="flex-1 relative">
-                                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 p-1 rounded-md 
-                                    bg-blue-100 dark:bg-blue-900/30 z-10">
-                                        <FileText className="w-4 h-4 text-blue-600 dark:text-blue-600" />
+                        <CardContent className="relative">
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="flex flex-col md:flex-row gap-4">
+                                    <div className="flex-1 relative">
+                                        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 p-1 rounded-md 
+                                        bg-blue-100 dark:bg-blue-900/30 z-10">
+                                            <FileText className="w-4 h-4 text-blue-600 dark:text-blue-600" />
+                                        </div>
+                                        <Input
+                                            value={prompt}
+                                            onChange={(e) => setPrompt(e.target.value)}
+                                            placeholder="Enter a Name / Business / Product / Website etc."
+                                            className="pl-14 h-14 text-base border-2 border-blue-200 dark:border-blue-800
+                                            focus:border-blue-500 dark:focus:border-blue-400 bg-white/80 dark:bg-gray-900/80
+                                            backdrop-blue-sm shadow-sm w-full"
+                                            disabled={isLoading}
+                                        />
                                     </div>
-                                    <Input
-                                        value={prompt}
-                                        onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder="Enter a Name / Business / Product / Website etc."
-                                        className="pl-14 h-14 text-base border-2 border-blue-200 dark:border-blue-800
-                                        focus:border-blue-500 dark:focus:border-blue-400 bg-white/80 dark:bg-gray-900/80
-                                        backdrop-blue-sm shadow-sm w-full"
+
+                                    <CountrySelector
+                                        value={country}
+                                        onValueChange={setCountry}
                                         disabled={isLoading}
                                     />
+
+                                    <div>
+                                        <Button
+                                            type="submit"
+                                            size="lg"
+                                            className="h-14 px-6 md:px-8 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600
+                                            hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 border-0 shadow-lg 
+                                            hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-300 group font-semibold
+                                            w-full md:w-auto"
+                                            disabled={isLoading || !prompt.trim()}
+                                        >
+                                            {isLoading ? (
+                                                <>
+                                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full
+                                                    animate-spin mr-3" />
+                                                    <span className="hidden lg:inline">
+                                                        Generating Report...
+                                                    </span>
+                                                    <span className="lg:hidden">Generating...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Plus className="w-5 h-5 mr-3 group-hover:rotate-90 transition-transform 
+                                                    duration-300" />
+                                                    <span className="hidden lg:inline">
+                                                        Generate Report
+                                                    </span>
+                                                    <span className="lg:hidden">Generate</span>
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
                                 </div>
 
-                                <CountrySelector
-                                    value={country}
-                                    onValueChange={setCountry}
-                                    disabled={isLoading}
-                                />
+                                {/* Feature highlights */}
+                                <div className="flex flex-wrap justify-center gap-4 pt-4 border-t border-blue-200/50 dark:border-blue-800/50">
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                        <span>AI-Powered Analysis</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                        <span>Real-time Data</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                        <span>Comprehensive Insights</span>
+                                    </div>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
 
-                                <div>
-                                    <Button
-                                        type="submit"
-                                        size="lg"
-                                        className="h-14 px-6 md:px-8 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600
-                                        hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 border-0 shadow-lg 
-                                        hover:shadow-xl hover:shadow-purple-500/25 transition-all duration-300 group font-semibold
-                                        w-full md:w-auto"
-                                        disabled={isLoading || !prompt.trim()}
-                                    >
-                                        {isLoading ? (
-                                            <>
-                                                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full
-                                                animate-spin mr-3" />
-                                                <span className="hidden lg:inline">
-                                                    Generating Report...
-                                                </span>
-                                                <span className="lg:hidden">Generating...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Plus className="w-5 h-5 mr-3 group-hover:rotate-90 transition-transform 
-                                                duration-300" />
-                                                <span className="hidden lg:inline">
-                                                    Generate Report
-                                                </span>
-                                                <span className="lg:hidden">Generate</span>
-                                            </>
-                                        )}
-                                    </Button>
+                    {/* Reports Section */}
+                    <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="w-5 h-5 text-primary" />
+                                <CardTitle className="text-2xl">Recent Reports</CardTitle>
+                            </div> 
+                            <CardDescription>
+                                Track the progress of your SEO analysis reports.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Authenticated>
+                                <ReportsTable />
+                            </Authenticated>
+                            <AuthLoading>
+                                <div className="flex items-center justify-center">
+                                    <Loader2 className="w-6 h-6 animate-spin mr-2" />
                                 </div>
-                            </div>
-
-                            {/* Feature highlights */}
-                            <div className="flex flex-wrap justify-center gap-4 pt-4 border-t border-blue-200/50 dark:border-blue-800/50">
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                    <span>AI-Powered Analysis</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                    <span>Real-time Data</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                                    <span>Comprehensive Insights</span>
-                                </div>
-                            </div>
-                        </form>
-                    </CardContent>
+                            </AuthLoading>
+                        </CardContent>
                     </Card>
                 </div>
             </div>

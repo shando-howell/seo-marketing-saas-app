@@ -27,7 +27,7 @@ const startScraping = async (
         throw new Error("User ID is required");
     }
 
-    // Initialize Convex client
+    // Initialize convex client
     const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
 
     let jobId: string;
@@ -40,7 +40,7 @@ const startScraping = async (
         });
 
         if (retryInfo.canRetryAnalysisOnly) {
-            console.log("Using smart retyr - anaylysis only for job:", existingJobId);
+            console.log("Using smart retry - anaylysis only for job:", existingJobId);
 
             const result = await retryAnalysisOnly(existingJobId);
             if (result.ok) {
